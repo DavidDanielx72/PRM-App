@@ -1,0 +1,41 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "student@example.com",
+      "password": "$2a$08$ToDLkYXK4UPBWYKtFzIucecvDdwrjPTgtJ6dwJ7VZyte6GsRVh/Ra",
+      "role": "student",
+      "name": "Student One",
+      "is_approved": true,
+      "banned": false
+    },
+    {
+      "id": 2,
+      "email": "seller@example.com",
+      "password": "$2a$08$hY7jxCznRjStYXMjnYfOme3HD2mmQ9zBo3hd4iQokgQRONsd86Zrq",
+      "role": "seller",
+      "name": "Seller One",
+      "is_approved": false,
+      "banned": false
+    },
+    {
+      "id": 3,
+      "email": "admin@example.com",
+      "password": "$2a$08$29Io6YfRI2RZSg8XWtamruj/f5H4Bp4Lzk8Qypa1cQA6gI0kabu5m",
+      "role": "admin",
+      "name": "Admin User",
+      "is_approved": true,
+      "banned": false
+    },
+    {
+      "id": 4,
+      "email": "lecturer@example.com",
+      "password": "$2a$08$E9NykVkGKOkEStEqepR6SeM9mmb6S9HcsJbUs84ok37Q/vttgCqHm",
+      "role": "lecturer",
+      "name": "Dr Lecturer",
+      "is_approved": true,
+      "banned": false
+    }
+  ],
+  "nextId": 5
+}
