@@ -1,5 +1,20 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE TABLE public.profiles (id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, email TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL DEFAULT '', phone TEXT, student_number TEXT, role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student','seller','admin')), is_seller BOOLEAN DEFAULT FALSE, avatar_url TEXT, bio TEXT, banned BOOLEAN DEFAULT FALSE, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE NOT NULL,
+  full_name TEXT NOT NULL DEFAULT '',
+  phone TEXT,
+  student_number TEXT,
+  campus TEXT,
+  address TEXT,
+  role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student','seller','admin')),
+  is_seller BOOLEAN DEFAULT FALSE,
+  avatar_url TEXT,
+  bio TEXT,
+  banned BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 CREATE TABLE public.categories (id SERIAL PRIMARY KEY, name TEXT UNIQUE NOT NULL, slug TEXT UNIQUE NOT NULL, icon TEXT DEFAULT 'package');
 CREATE TABLE public.listings (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), seller_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE, title TEXT NOT NULL, description TEXT, price NUMERIC(10,2) NOT NULL CHECK (price >= 0), category_id INTEGER REFERENCES public.categories(id), image_url TEXT, is_service BOOLEAN DEFAULT FALSE, is_active BOOLEAN DEFAULT TRUE, stock INTEGER DEFAULT 1, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
 CREATE TABLE public.orders (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), buyer_id UUID NOT NULL REFERENCES public.profiles(id), seller_id UUID NOT NULL REFERENCES public.profiles(id), listing_id UUID NOT NULL REFERENCES public.listings(id), quantity INTEGER NOT NULL DEFAULT 1, total NUMERIC(10,2) NOT NULL, status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','confirmed','shipped','delivered','cancelled','returned')), delivery_date TIMESTAMPTZ, delivery_notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
