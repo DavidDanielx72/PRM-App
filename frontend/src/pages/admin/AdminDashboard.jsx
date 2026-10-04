@@ -1,0 +1,2 @@
+import { Link } from 'react-router-dom'; import Navbar from '../../components/Navbar';
+export default function AdminDashboard(){return <div className="min-h-screen bg-cput-light"><Navbar/><main className="mx-auto max-w-5xl px-4 py-8"><h1 className="text-3xl font-bold">Admin dashboard</h1><p className="mt-2 text-gray-500">Manage the CPUT Community Store.</p><div className="mt-6 flex gap-3"><Link className="primary" to="/admin/users">Manage users</Link><Link className="secondary" to="/admin/announcements">Post announcement</Link></div></main></div>}

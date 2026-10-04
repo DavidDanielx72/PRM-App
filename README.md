@@ -1,47 +1,26 @@
-# Community Store App (PRM App)
+# Community Store
 
-This workspace contains two packages:
+React + Supabase web application for the CPUT student marketplace.
 
-- `app/` — Expo React Native (TypeScript) frontend
-- `backend/` — Node.js + TypeScript Express API with SQLite (better-sqlite3)
-
-Quick start
-
-1. Open the workspace directory in a terminal.
-
-2. Install backend dependencies and run the server:
+## Frontend
 
 ```bash
-cd backend
+cd frontend
+cp .env.example .env
+# Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env
 npm install
 npm run dev
 ```
 
-3. Install app dependencies and start Expo (in a separate terminal):
+Open the URL printed by Vite, normally `http://localhost:5173`.
 
-```bash
-cd app
-npm install
-npm run start
-```
+## Supabase setup
 
-Notes
+Run these files in Supabase SQL Editor in order:
 
-- The frontend is scaffolded for Expo TypeScript. You may run `npx create-expo-app . -t expo-template-blank-typescript` inside `app/` to finish a full Expo scaffold, or run `npm install` to install the dependencies listed in `app/package.json`.
-- The backend uses SQLite and seeds demo users for `student`, `seller`, and `admin`. JWT-based auth is implemented for demo purposes only.
+1. `backend/schema.sql`
+2. `backend/policies.sql`
+3. `backend/triggers.sql`
+4. `backend/seed.sql`
 
-Seeding demo users
-
-Run the seed script (after `npm install`) to create demo accounts:
-
-```bash
-cd backend
-npm run seed
-```
-
-Emulator note: Android emulators usually map host `localhost` to `10.0.2.2`. The app's API client uses `10.0.2.2:4000` by default — change `app/src/api.ts` to `http://localhost:4000` if you run on a platform that accesses localhost directly.
-
-Next steps
-
-- Implement UI screens from the provided Figma design and wire them to the backend.
-- Add polished animations and asset exports from Figma.
+Admins must be created by an existing admin. Never put a Supabase service-role key in the frontend.

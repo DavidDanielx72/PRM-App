@@ -1,8 +1,0 @@
-node_modules/
-app/node_modules/
-.expo/
-dist/
-build/
-.env
-.env.local
-.env.local
