@@ -132,7 +132,7 @@ export default function StudentHome() {
             className={`px-4 py-2 rounded-xl text-[13px] font-semibold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 ${
               !cat
                 ? 'bg-gradient-to-br from-cput-blue to-cput-blue-dark text-white shadow-md shadow-blue-900/20'
-                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/60 hover:border-cput-blue/30'
+                : 'bg-cput-surface text-slate-600 hover:bg-cput-surface-blue border border-cput-blue/10 hover:border-cput-blue/30'
             }`}
           >
             <TrendingUp size={14} /> All Items
@@ -145,7 +145,7 @@ export default function StudentHome() {
               className={`px-4 py-2 rounded-xl text-[13px] font-semibold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 ${
                 cat === category.id
                   ? 'bg-gradient-to-br from-cput-blue to-cput-blue-dark text-white shadow-md shadow-blue-900/20'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/60 hover:border-cput-blue/30'
+                  : 'bg-cput-surface text-slate-600 hover:bg-cput-surface-blue border border-cput-blue/10 hover:border-cput-blue/30'
               }`}
             >
               <span className="text-base">{category.icon}</span>
@@ -164,7 +164,7 @@ export default function StudentHome() {
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {[...Array(10)].map((_, index) => (
-              <div key={index} className="bg-white rounded-2xl overflow-hidden border border-slate-100">
+              <div key={index} className="bg-cput-surface rounded-2xl overflow-hidden border border-cput-blue/10">
                 <div className="h-44 skeleton" />
                 <div className="p-4 space-y-2">
                   <div className="h-3 skeleton rounded w-1/3" />
@@ -175,7 +175,7 @@ export default function StudentHome() {
             ))}
           </div>
         ) : listings.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm animate-scale-in">
+          <div className="text-center py-20 bg-cput-surface rounded-3xl border border-cput-blue/10 shadow-card animate-scale-in">
             <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
               <Package size={32} className="text-cput-blue/60" />
             </div>

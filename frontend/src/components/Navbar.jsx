@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabase';
 import {
   ShoppingCart,
   MessageSquare,
@@ -17,11 +18,42 @@ import {
 } from 'lucide-react';
 
 export default function Navbar({ cartCount = 0 }) {
-  const { profile, signOut, isSeller, isAdmin } = useAuth();
+  const { user, profile, signOut, isSeller, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user || !supabase) {
+      setUnreadCount(0);
+      return;
+    }
+
+    const loadUnreadCount = async () => {
+      const { count, error } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('receiver_id', user.id)
+        .eq('is_read', false);
+
+      if (!error) setUnreadCount(count || 0);
+    };
+
+    loadUnreadCount();
+
+    const channel = supabase
+      .channel(`unread-messages-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'messages' },
+        loadUnreadCount
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [user]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -52,12 +84,13 @@ export default function Navbar({ cartCount = 0 }) {
         { to: '/seller/orders', label: 'Orders', icon: Package },
         { to: '/seller/add-listing', label: 'Add Listing', icon: Sparkles },
         { to: '/student', label: 'Browse', icon: Search },
+        { to: '/announcements', label: 'Announcements', icon: Megaphone },
         { to: '/messages', label: 'Messages', icon: MessageSquare },
         { to: '/profile', label: 'Profile', icon: User },
       ]
     : [
         { to: '/student', label: 'Home', icon: Home },
-        { to: '/announcements', label: 'News', icon: Megaphone },
+      { to: '/announcements', label: 'Announcements', icon: Megaphone },
         { to: '/orders', label: 'Orders', icon: Package },
         { to: '/messages', label: 'Messages', icon: MessageSquare },
         { to: '/profile', label: 'Profile', icon: User },
@@ -69,8 +102,8 @@ export default function Navbar({ cartCount = 0 }) {
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/85 backdrop-blur-xl shadow-[0_4px_24px_rgba(10,61,98,0.08)] border-b border-slate-100'
-          : 'bg-white/70 backdrop-blur-md border-b border-transparent'
+          ? 'bg-eggshell/85 backdrop-blur-xl shadow-[0_4px_24px_rgba(10,61,98,0.10)] border-b border-cput-blue/10'
+          : 'bg-eggshell/70 backdrop-blur-md border-b border-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -80,7 +113,9 @@ export default function Navbar({ cartCount = 0 }) {
             className="flex items-center gap-2.5 group"
           >
             <div className="relative w-9 h-9 rounded-xl gradient-blue flex items-center justify-center shadow-lg shadow-blue-900/20 group-hover:scale-105 transition-transform">
-              <span className="text-cput-gold font-extrabold text-sm tracking-tight">CS</span>
+              <span className="text-cput-gold font-extrabold text-sm tracking-tight">
+                CS
+              </span>
               <div className="absolute inset-0 rounded-xl ring-1 ring-white/20" />
             </div>
             <span className="font-bold text-slate-800 hidden sm:block tracking-tight">
@@ -98,11 +133,16 @@ export default function Navbar({ cartCount = 0 }) {
                   className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                     active
                       ? 'bg-gradient-to-br from-cput-blue to-cput-blue-dark text-white shadow-md shadow-blue-900/20'
-                      : 'text-slate-500 hover:text-cput-blue hover:bg-slate-50'
+                      : 'text-slate-600 hover:text-cput-blue hover:bg-blue-tint/60'
                   }`}
                 >
                   <link.icon size={16} />
                   <span>{link.label}</span>
+                  {link.to === '/messages' && unreadCount > 0 && (
+                    <span className="ml-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -110,7 +150,7 @@ export default function Navbar({ cartCount = 0 }) {
             {!isSeller && !isAdmin && (
               <Link
                 to="/cart"
-                className="relative p-2.5 ml-1 text-slate-500 hover:text-cput-blue hover:bg-slate-50 rounded-xl transition-colors"
+                className="relative p-2.5 ml-1 text-slate-600 hover:text-cput-blue hover:bg-blue-tint/60 rounded-xl transition-colors"
               >
                 <ShoppingCart size={19} />
                 {cartCount > 0 && (
@@ -121,11 +161,11 @@ export default function Navbar({ cartCount = 0 }) {
               </Link>
             )}
 
-            <div className="w-px h-6 bg-slate-200 mx-1.5" />
+            <div className="w-px h-6 bg-cput-blue/15 mx-1.5" />
 
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut size={16} />
               <span>Sign out</span>
@@ -133,7 +173,7 @@ export default function Navbar({ cartCount = 0 }) {
           </div>
 
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-blue-tint/60 transition-colors"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -147,7 +187,7 @@ export default function Navbar({ cartCount = 0 }) {
           open ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="border-t border-slate-100 bg-white/95 backdrop-blur-lg px-4 py-3 space-y-1">
+        <div className="border-t border-cput-blue/10 bg-eggshell/95 backdrop-blur-lg px-4 py-3 space-y-1">
           {links.map((link) => (
             <Link
               key={link.to}
@@ -155,18 +195,24 @@ export default function Navbar({ cartCount = 0 }) {
               className={`flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-sm font-semibold transition-colors ${
                 isActive(link.to)
                   ? 'bg-gradient-to-br from-cput-blue to-cput-blue-dark text-white'
-                  : 'text-slate-600 hover:bg-slate-50'
+                  : 'text-slate-700 hover:bg-blue-tint/60'
               }`}
             >
               <link.icon size={18} />
               {link.label}
+              {link.to === '/messages' && unreadCount > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </Link>
           ))}
           <button
             onClick={handleLogout}
             className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 w-full transition-colors"
           >
-            <LogOut size={18} /> Sign out
+            <LogOut size={18} />
+            Sign out
           </button>
         </div>
       </div>

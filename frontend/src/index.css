@@ -2,76 +2,101 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
 :root {
+  /* Brand */
   --cput-blue: #0a3d62;
   --cput-blue-dark: #062b45;
   --cput-blue-light: #1a5fa3;
   --cput-gold: #ffb81c;
   --cput-gold-dark: #e09e00;
-  --cput-light: #f4f6fb;
   --cput-navy: #041e2f;
+
+  /* Surfaces — warmer, creamier, less harsh white */
+  --cput-cream: #f4efe4;          /* main page background */
+  --cput-cream-soft: #fbf7ee;     /* panel background */
+  --cput-eggshell: #fdfaf3;       /* card background */
+  --cput-blue-tint: #eaf1f8;      /* soft blue panel fill */
+  --cput-blue-tint-2: #dbe8f4;    /* deeper blue panel fill */
+  --cput-blue-tint-3: #c6dcf0;    /* border / divider blue */
+
+  /* Borders */
+  --cput-border: rgba(10, 61, 98, 0.14);
+  --cput-border-strong: rgba(10, 61, 98, 0.28);
+  --cput-border-soft: rgba(10, 61, 98, 0.08);
+
+  /* Legacy aliases kept so existing classes still work */
+  --cput-light: var(--cput-cream);
+  --cput-surface: var(--cput-eggshell);
+  --cput-surface-blue: var(--cput-blue-tint);
 }
+
+/* ---------- Base ---------- */
 
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   min-height: 100%;
 }
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--cput-light);
   color: #0f172a;
+  background-color: var(--cput-cream);
+
+  /* Layered cream + blue + gold glow so it never looks flat white */
   background-image:
-    radial-gradient(circle at 15% 0%, rgba(10, 61, 98, 0.04), transparent 40%),
-    radial-gradient(circle at 85% 100%, rgba(255, 184, 28, 0.05), transparent 45%);
+    radial-gradient(circle at 6% -4%, rgba(26, 95, 163, 0.16), transparent 38%),
+    radial-gradient(circle at 94% 106%, rgba(255, 184, 28, 0.14), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(10, 61, 98, 0.04), transparent 65%),
+    linear-gradient(135deg, #f7f2e6 0%, #f3efe5 45%, #eaf1f8 100%);
   background-attachment: fixed;
 }
+
+/* ---------- Scrollbars ---------- */
 
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(10, 61, 98, 0.2);
+  background: rgba(10, 61, 98, 0.22);
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(10, 61, 98, 0.4);
+  background: rgba(10, 61, 98, 0.42);
   background-clip: padding-box;
 }
+
+/* ---------- Animations (unchanged) ---------- */
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
-
 @keyframes shimmer {
   0% { background-position: -1000px 0; }
   100% { background-position: 1000px 0; }
 }
-
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
@@ -82,38 +107,269 @@ body {
 .animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
 .animate-float { animation: float 3s ease-in-out infinite; }
 
+/* ---------- Surfaces ---------- */
+
+/* Glass — warmer, tinted with blue instead of pure white */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(251, 247, 238, 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--cput-border);
 }
+
+/* Main panel — cream card with blue-tinted shadow and blue accent border */
+.surface-panel {
+  background: linear-gradient(180deg, var(--cput-eggshell) 0%, #fbf6ea 100%);
+  border: 1px solid var(--cput-border);
+  box-shadow:
+    0 12px 32px rgba(10, 61, 98, 0.10),
+    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+
+/* Blue-tinted panel — for feature blocks, sidebars, stat cards */
+.surface-blue {
+  background: linear-gradient(180deg, var(--cput-blue-tint) 0%, #dfeaf5 100%);
+  border: 1px solid rgba(26, 95, 163, 0.20);
+  box-shadow:
+    0 10px 28px rgba(10, 61, 98, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.5) inset;
+}
+
+/* Deeper blue variant — hero strips, headers */
+.surface-blue-deep {
+  background: linear-gradient(135deg, #0a3d62 0%, #123f64 60%, #1a5fa3 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+/* Thin blue accent rule at the top of a panel */
+.accent-rule {
+  border-top: 3px solid var(--cput-blue-light);
+  position: relative;
+}
+.accent-rule::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 72px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--cput-gold), var(--cput-gold-dark));
+  border-radius: 0 3px 3px 0;
+}
+
+/* ---------- Gradients ---------- */
 
 .gradient-blue {
   background: linear-gradient(135deg, #0a3d62 0%, #062b45 55%, #041e2f 100%);
 }
-
 .gradient-gold {
   background: linear-gradient(135deg, #ffb81c 0%, #e09e00 100%);
 }
 
+/* Subtle blue-to-cream wash for headers / banners */
+.gradient-cream-blue {
+  background: linear-gradient(135deg, #fbf7ee 0%, #eaf1f8 55%, #dbe8f4 100%);
+}
+
+/* ---------- Hover ---------- */
+
 .card-hover {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.25s ease;
 }
-
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(10, 61, 98, 0.15);
+  box-shadow: 0 16px 40px rgba(10, 61, 98, 0.18);
+  border-color: var(--cput-border-strong);
 }
 
+/* ---------- Skeleton ---------- */
+
 .skeleton {
-  background: linear-gradient(90deg, #eef1f6 0%, #f8fafc 50%, #eef1f6 100%);
+  background: linear-gradient(90deg, #eceef3 0%, #f7f9fc 50%, #eceef3 100%);
   background-size: 1000px 100%;
   animation: shimmer 1.5s infinite linear;
 }
 
+/* ---------- Focus ---------- */
+
 *:focus-visible {
-  outline: 2px solid rgba(10, 61, 98, 0.4);
+  outline: 2px solid rgba(10, 61, 98, 0.45);
   outline-offset: 2px;
+}
+
+/* ---------- Vite starter leftovers (kept, harmless) ---------- */
+
+.counter {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
+  margin-bottom: 24px;
+}
+.counter:hover { border-color: var(--accent-border); }
+.counter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero { position: relative; }
+.hero .base,
+.hero .framework,
+.hero .vite { inset-inline: 0; margin: 0 auto; }
+.hero .base { width: 170px; position: relative; z-index: 0; }
+.hero .framework,
+.hero .vite { position: absolute; }
+.hero .framework {
+  z-index: 1; top: 34px; height: 28px;
+  transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg) scale(1.4);
+}
+.hero .vite {
+  z-index: 0; top: 107px; height: 26px; width: auto;
+  transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg) scale(0.8);
+}
+
+#center {
+  display: flex; flex-direction: column; gap: 25px;
+  place-content: center; place-items: center; flex-grow: 1;
+}
+@media (max-width: 1024px) {
+  #center { padding: 32px 20px 24px; gap: 18px; }
+}
+
+#next-steps {
+  display: flex;
+  border-top: 1px solid var(--border);
+  text-align: left;
+}
+#next-steps > div { flex: 1 1 0; padding: 32px; }
+@media (max-width: 1024px) {
+  #next-steps { flex-direction: column; text-align: center; }
+  #next-steps > div { padding: 24px 20px; }
+}
+#docs { border-right: 1px solid var(--border); }
+@media (max-width: 1024px) {
+  #docs { border-right: none; border-bottom: 1px solid var(--border); }
+}
+#next-steps ul {
+  list-style: none; padding: 0; display: flex; gap: 8px; margin: 32px 0 0;
+}
+#next-steps ul .logo { height: 18px; }
+#next-steps ul a {
+  color: var(--text-h); font-size: 16px; border-radius: 6px;
+  background: var(--social-bg); display: flex; padding: 6px 12px;
+  align-items: center; gap: 8px; text-decoration: none; transition: box-shadow 0.3s;
+}
+#next-steps ul a:hover { box-shadow: var(--shadow); }
+#next-steps ul .button-icon { height: 18px; width: 18px; }
+@media (max-width: 1024px) {
+  #next-steps ul { margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+  #next-steps ul li { flex: 1 1 calc(50% - 8px); }
+  #next-steps ul a { width: 100%; justify-content: center; box-sizing: border-box; }
+}
+
+#spacer { height: 88px; border-top: 1px solid var(--border); }
+@media (max-width: 1024px) { #spacer { height: 48px; } }
+
+.ticks { position: relative; width: 100%; }
+.ticks::before,
+.ticks::after {
+  content: ''; position: absolute; top: -4.5px; border: 5px solid transparent;
+}
+.ticks::before { left: 0; border-left-color: var(--border); }
+.ticks::after { right: 0; border-right-color: var(--border); }
+
+
+/* ---------- Announcements page extras ---------- */
+
+/* Slow diagonal drift for the background pattern layer */
+@keyframes driftDiagonal {
+  0%   { background-position: 0 0, 9px 9px; }
+  100% { background-position: 36px 36px, 45px 45px; }
+}
+
+/* Soft pulsing halo for the priority icon badge */
+@keyframes softPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(10, 61, 98, 0.25); }
+  50%      { box-shadow: 0 0 0 10px rgba(10, 61, 98, 0); }
+}
+
+/* Gentle floating for the hero megaphone */
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50%      { transform: translateY(-6px) rotate(-6deg); }
+}
+
+/* Sweeping shimmer that runs across the card on hover */
+@keyframes sweep {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+/* Priority band pulse for "high" priority items */
+@keyframes bandPulse {
+  0%, 100% { opacity: 0.9; }
+  50%      { opacity: 0.55; }
+}
+
+.ann-drift {
+  background-image:
+    radial-gradient(rgba(10, 61, 98, 0.14) 1px, transparent 1px),
+    radial-gradient(rgba(10, 61, 98, 0.07) 1px, transparent 1px);
+  background-size: 18px 18px, 18px 18px;
+  background-position: 0 0, 9px 9px;
+  animation: driftDiagonal 40s linear infinite;
+}
+
+.ann-hero-icon {
+  animation: heroFloat 4s ease-in-out infinite;
+}
+
+.ann-pulse {
+  animation: softPulse 2.6s ease-out infinite;
+}
+
+.ann-band-pulse {
+  animation: bandPulse 2.8s ease-in-out infinite;
+}
+
+.ann-card-sweep {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.ann-card-sweep::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  transition: none;
+}
+.ann-card-sweep.is-hovered::after {
+  animation: sweep 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1;
+}
+
+/* Diag line pattern used on the modal body */
+.ann-diag-lines {
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      rgba(10, 61, 98, 0.05) 0px,
+      rgba(10, 61, 98, 0.05) 1px,
+      transparent 1px,
+      transparent 10px
+    );
 }

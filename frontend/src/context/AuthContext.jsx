@@ -1,6 +1,6 @@
 // Global authentication context
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../services/supabase';
+import { supabase, supabaseConfigured } from '../services/supabase';
 
 const AuthContext = createContext({});
 
@@ -10,6 +10,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId) => {
+    if (!supabase) return null;
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -21,6 +23,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     let mounted = true;
+
+    if (!supabaseConfigured || !supabase) {
+      setLoading(false);
+      return () => {
+        mounted = false;
+      };
+    }
 
     // 1) Initial session check — this also sets loading to false
     const init = async () => {
@@ -67,12 +76,18 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signIn = async (email, password) => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to the frontend .env file.');
+    }
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
   };
 
   const signUp = async (email, password, fullName, isSeller) => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to the frontend .env file.');
+    }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -94,13 +109,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
   };
 
   const refreshProfile = async () => {
-    if (!user) return;
+    if (!user || !supabase) return;
     const prof = await fetchProfile(user.id);
     setProfile(prof);
   };

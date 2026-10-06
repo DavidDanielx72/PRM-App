@@ -27,8 +27,8 @@ export default function Messages() {
     if (profile.role === 'admin') {
       return ['admin', 'seller', 'student'];
     }
-    if (profile.role === 'seller') {
-      return ['student'];
+    if (profile.role === 'seller' || profile.is_seller === true) {
+      return ['admin', 'student'];
     }
     if (profile.role === 'student') {
       return ['seller'];
@@ -46,35 +46,87 @@ export default function Messages() {
       .in('role', allowedUsers)
       .order('full_name');
 
-    if (!error) {
-      const contactList = data || [];
-      setContacts(contactList);
+    if (error) {
+      toast.error(error.message || 'Unable to load contacts');
+      return;
+    }
 
-      const targetId = searchParams.get('to');
-      if (targetId && contactList.some((contact) => contact.id === targetId)) {
-        setSelectedContactId(targetId);
-      } else if (contactList[0]) {
-        setSelectedContactId(contactList[0].id);
-        if (targetId) setSearchParams({ to: contactList[0].id });
+    const { data: threadRows, error: threadError } = await supabase
+      .from('messages')
+      .select('sender_id, receiver_id')
+      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+
+    if (threadError) {
+      toast.error(threadError.message || 'Unable to load message threads');
+      return;
+    }
+
+    const contactIdsWithMessages = new Set(
+      (threadRows || []).flatMap(({ sender_id, receiver_id }) => [sender_id, receiver_id])
+    );
+    contactIdsWithMessages.delete(user.id);
+
+    const visibleContacts = [...(data || [])];
+    const missingContactIds = [...contactIdsWithMessages].filter(
+      (contactId) => !visibleContacts.some((contact) => contact.id === contactId)
+    );
+
+    if (missingContactIds.length > 0) {
+      const { data: threadContacts, error: threadContactsError } = await supabase
+        .from('profiles')
+        .select('id, full_name, role, is_seller, email')
+        .in('id', missingContactIds)
+        .order('full_name');
+
+      if (threadContactsError) {
+        toast.error(threadContactsError.message || 'Unable to load message contacts');
+        return;
       }
+
+      visibleContacts.push(...(threadContacts || []));
+    }
+
+    visibleContacts.sort((first, second) =>
+      (first.full_name || '').localeCompare(second.full_name || '')
+    );
+    setContacts(visibleContacts);
+
+    const targetId = searchParams.get('to');
+    if (targetId && visibleContacts.some((contact) => contact.id === targetId)) {
+      setSelectedContactId(targetId);
+    } else if (visibleContacts[0]) {
+      setSelectedContactId(visibleContacts[0].id);
+      if (targetId) setSearchParams({ to: visibleContacts[0].id });
     }
   };
 
   const loadConversation = async (contactId) => {
     if (!user || !contactId) {
       setMessages([]);
+      setLoading(false);
       return;
     }
 
-    const { data, error } = await supabase.from('messages').select('*').order('created_at', { ascending: true });
-    if (error) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${user.id})`)
+      .order('created_at', { ascending: true });
 
-    const thread = (data || []).filter(
-      (message) =>
-        (message.sender_id === user.id && message.receiver_id === contactId) ||
-        (message.sender_id === contactId && message.receiver_id === user.id)
-    );
-    setMessages(thread);
+    if (error) {
+      toast.error(error.message || 'Unable to load conversation');
+      setMessages([]);
+    } else {
+      setMessages(data || []);
+      await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('receiver_id', user.id)
+        .eq('sender_id', contactId)
+        .eq('is_read', false);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -86,12 +138,14 @@ export default function Messages() {
     if (!selectedContactId) return;
     loadConversation(selectedContactId);
 
+    if (!user) return;
+
     const channel = supabase
       .channel(`messages-${user.id}-${selectedContactId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
-        async (payload) => {
+        (payload) => {
           const newMessage = payload.new;
           if (
             (newMessage.sender_id === user.id && newMessage.receiver_id === selectedContactId) ||
@@ -123,7 +177,7 @@ export default function Messages() {
     }
 
     setText('');
-    loadConversation(selectedContactId);
+    await loadConversation(selectedContactId);
   }
 
   const selectedContact = contacts.find((contact) => contact.id === selectedContactId) || null;
@@ -143,11 +197,11 @@ export default function Messages() {
           </div>
         </div>
 
-        <div className="grid overflow-hidden rounded-[30px] border border-white/70 bg-white/80 shadow-[0_20px_60px_rgba(10,61,98,0.08)] backdrop-blur-xl lg:grid-cols-[330px_minmax(0,1fr)]">
-          <aside className="border-b border-slate-100 bg-slate-50/70 lg:border-b-0 lg:border-r">
+        <div className="grid overflow-hidden rounded-[30px] border border-cput-blue/15 bg-cput-surface/90 shadow-[0_20px_60px_rgba(10,61,98,0.1)] backdrop-blur-xl lg:grid-cols-[330px_minmax(0,1fr)]">
+          <aside className="border-b border-cput-blue/10 bg-cput-surface-blue/80 lg:border-b-0 lg:border-r">
             <div className="border-b border-slate-200/80 p-4">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                {profile?.role === 'admin' ? 'All users' : profile?.role === 'seller' ? 'Students' : 'Sellers'}
+                {profile?.role === 'admin' ? 'All users' : profile?.role === 'seller' || profile?.is_seller ? 'Students and admins' : 'Sellers'}
               </p>
             </div>
 
@@ -170,7 +224,7 @@ export default function Messages() {
                       className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition ${
                         isSelected
                           ? 'border-[#0a3d62]/15 bg-[#0a3d62] text-white shadow-lg shadow-[#0a3d62]/15'
-                          : 'border-transparent bg-white hover:border-slate-200 hover:bg-slate-50 text-slate-700'
+                          : 'border-transparent bg-cput-surface hover:border-cput-blue/15 hover:bg-cput-surface-blue text-slate-700'
                       }`}
                     >
                       <div className={`grid h-11 w-11 place-items-center rounded-xl ${isSelected ? 'bg-white/10 text-white' : 'bg-[#0a3d62]/5 text-[#0a3d62]'}`}>
@@ -195,7 +249,7 @@ export default function Messages() {
           <section className="flex min-h-[640px] flex-col">
             {selectedContact ? (
               <>
-                <header className="flex items-center justify-between border-b border-slate-200 bg-white/60 px-5 py-4">
+                <header className="flex items-center justify-between border-b border-cput-blue/10 bg-cput-surface/75 px-5 py-4">
                   <div className="flex items-center gap-3">
                     <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#0a3d62] to-[#1a5fa3] text-white">
                       {selectedContact.role === 'seller' ? <Store size={17} /> : <UserRound size={17} />}
@@ -227,7 +281,7 @@ export default function Messages() {
                               className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
                                 isMine
                                   ? 'bg-gradient-to-r from-[#0a3d62] to-[#123f64] text-white'
-                                  : 'border border-slate-200 bg-white text-slate-700'
+                                  : 'border border-cput-blue/10 bg-cput-surface text-slate-700'
                               }`}
                             >
                               {message.content}
@@ -241,7 +295,7 @@ export default function Messages() {
                     )}
                   </div>
 
-                  <form onSubmit={sendMessage} className="mt-4 flex gap-2 border-t border-slate-200 bg-white/70 px-3 py-3">
+                  <form onSubmit={sendMessage} className="mt-4 flex gap-2 border-t border-cput-blue/10 bg-cput-surface/80 px-3 py-3">
                     <input
                       value={text}
                       onChange={(event) => setText(event.target.value)}
