@@ -121,7 +121,7 @@ export default function AddListing() {
                   <span className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700"><Tag size={15} className="text-cput-blue-light" /> Category</span>
                   <select className="input" required value={form.category_id} onChange={updateField('category_id')}>
                     <option value="">Choose a category</option>
-                    {categories.map((category) => <option key={category.id} value={category.id}>{category.icon} {category.name}</option>)}
+                    {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
                   </select>
                 </label>
                 <label className="block">

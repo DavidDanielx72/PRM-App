@@ -7,7 +7,7 @@ export default function ProductCard({ listing, onAddToCart, index = 0 }) {
 
   return (
     <div
-      className="group relative overflow-hidden rounded-2xl border border-cput-blue/15 bg-eggshell card-hover animate-slide-up hover:border-cput-blue/35"
+      className="social-card group relative overflow-hidden rounded-[1.75rem] animate-slide-up"
       style={{
         animationDelay: `${Math.min(index * 40, 400)}ms`,
         animationFillMode: 'both',
@@ -16,7 +16,7 @@ export default function ProductCard({ listing, onAddToCart, index = 0 }) {
       <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-cput-blue via-cput-blue-light to-cput-gold opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <Link to={`/product/${id}`} className="block">
-        <div className="relative h-44 overflow-hidden bg-gradient-to-br from-blue-tint via-eggshell to-amber-50">
+        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-blue-tint via-eggshell to-amber-50 dark:from-[#172b45] dark:via-[#131e31] dark:to-[#283044]">
           {image_url ? (
             <img
               src={image_url}
@@ -26,7 +26,7 @@ export default function ProductCard({ listing, onAddToCart, index = 0 }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgba(26,95,163,0.18),transparent_35%),linear-gradient(135deg,#eaf1f8,#fdfaf3_55%,#fff3d6)]">
-              <div className="grid h-20 w-20 place-items-center rounded-[28px] border border-white/80 bg-white/60 text-5xl shadow-lg shadow-cput-blue/10 group-hover:rotate-3 group-hover:scale-110 transition-transform duration-500">
+              <div className="grid h-20 w-20 place-items-center rounded-[28px] border border-white/80 bg-white/60 text-5xl shadow-lg shadow-cput-blue/10 transition-transform duration-500 group-hover:rotate-3 group-hover:scale-110 dark:border-white/10 dark:bg-white/10">
                 📦
               </div>
             </div>
@@ -47,7 +47,7 @@ export default function ProductCard({ listing, onAddToCart, index = 0 }) {
         </div>
       </Link>
 
-      <div className="p-4">
+      <div className="p-5">
         <p className="mb-1 inline-flex rounded-full bg-blue-tint px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-cput-blue">
           {categories?.name || 'Other'}
         </p>

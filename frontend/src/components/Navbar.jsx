@@ -15,10 +15,15 @@ import {
   Store,
   Search,
   Sparkles,
+  UsersRound,
+  Moon,
+  Sun,
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Navbar({ cartCount = 0 }) {
-  const { user, profile, signOut, isSeller, isAdmin } = useAuth();
+  const { user, signOut, isSeller, isAdmin } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -75,6 +80,7 @@ export default function Navbar({ cartCount = 0 }) {
         { to: '/admin', label: 'Dashboard', icon: Home },
         { to: '/admin/users', label: 'Users', icon: User },
         { to: '/admin/announcements', label: 'Announcements', icon: Megaphone },
+        { to: '/community', label: 'Community', icon: UsersRound },
         { to: '/messages', label: 'Messages', icon: MessageSquare },
         { to: '/profile', label: 'Profile', icon: User },
       ]
@@ -85,12 +91,14 @@ export default function Navbar({ cartCount = 0 }) {
         { to: '/seller/add-listing', label: 'Add Listing', icon: Sparkles },
         { to: '/student', label: 'Browse', icon: Search },
         { to: '/announcements', label: 'Announcements', icon: Megaphone },
+        { to: '/community', label: 'Community', icon: UsersRound },
         { to: '/messages', label: 'Messages', icon: MessageSquare },
         { to: '/profile', label: 'Profile', icon: User },
       ]
     : [
         { to: '/student', label: 'Home', icon: Home },
       { to: '/announcements', label: 'Announcements', icon: Megaphone },
+      { to: '/community', label: 'Community', icon: UsersRound },
         { to: '/orders', label: 'Orders', icon: Package },
         { to: '/messages', label: 'Messages', icon: MessageSquare },
         { to: '/profile', label: 'Profile', icon: User },
@@ -100,25 +108,25 @@ export default function Navbar({ cartCount = 0 }) {
 
   return (
     <nav
-      className={`sticky top-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 z-50 transition-all duration-300 dark:bg-[#0f1a2b]/90 dark:border-white/10 ${
         scrolled
           ? 'bg-eggshell/85 backdrop-blur-xl shadow-[0_4px_24px_rgba(10,61,98,0.10)] border-b border-cput-blue/10'
           : 'bg-eggshell/70 backdrop-blur-md border-b border-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center h-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="flex h-[4.5rem] items-center justify-between">
           <Link
             to={isAdmin ? '/admin' : isSeller ? '/seller' : '/student'}
-            className="flex items-center gap-2.5 group"
+            className="group flex items-center gap-3"
           >
-            <div className="relative w-9 h-9 rounded-xl gradient-blue flex items-center justify-center shadow-lg shadow-blue-900/20 group-hover:scale-105 transition-transform">
+            <div className="glow-ring relative grid h-10 w-10 place-items-center rounded-2xl gradient-blue transition-transform group-hover:rotate-[-4deg] group-hover:scale-105">
               <span className="text-cput-gold font-extrabold text-sm tracking-tight">
                 CS
               </span>
               <div className="absolute inset-0 rounded-xl ring-1 ring-white/20" />
             </div>
-            <span className="font-bold text-slate-800 hidden sm:block tracking-tight">
+            <span className="hidden font-black tracking-tight text-slate-900 sm:block">
               Community <span className="text-cput-blue">Store</span>
             </span>
           </Link>
@@ -130,7 +138,7 @@ export default function Navbar({ cartCount = 0 }) {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
+                  className={`relative flex items-center gap-1.5 rounded-2xl px-3.5 py-2.5 text-[13px] font-bold transition-all duration-200 ${
                     active
                       ? 'bg-gradient-to-br from-cput-blue to-cput-blue-dark text-white shadow-md shadow-blue-900/20'
                       : 'text-slate-600 hover:text-cput-blue hover:bg-blue-tint/60'
@@ -164,6 +172,15 @@ export default function Navbar({ cartCount = 0 }) {
             <div className="w-px h-6 bg-cput-blue/15 mx-1.5" />
 
             <button
+              onClick={toggleTheme}
+              className="grid h-10 w-10 place-items-center rounded-2xl text-slate-500 transition hover:bg-blue-tint hover:text-cput-blue"
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+
+            <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors"
             >
@@ -187,7 +204,7 @@ export default function Navbar({ cartCount = 0 }) {
           open ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="border-t border-cput-blue/10 bg-eggshell/95 backdrop-blur-lg px-4 py-3 space-y-1">
+        <div className="border-t border-cput-blue/10 bg-eggshell/95 backdrop-blur-lg px-4 py-3 space-y-1 dark:border-white/10 dark:bg-[#0f1a2b]/95">
           {links.map((link) => (
             <Link
               key={link.to}
@@ -195,7 +212,7 @@ export default function Navbar({ cartCount = 0 }) {
               className={`flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-sm font-semibold transition-colors ${
                 isActive(link.to)
                   ? 'bg-gradient-to-br from-cput-blue to-cput-blue-dark text-white'
-                  : 'text-slate-700 hover:bg-blue-tint/60'
+                  : 'text-slate-700 hover:bg-blue-tint/60 dark:text-slate-200'
               }`}
             >
               <link.icon size={18} />

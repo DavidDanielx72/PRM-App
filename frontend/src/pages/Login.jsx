@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ArrowRight, GraduationCap, LockKeyhole, Mail, ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -27,8 +28,11 @@ export default function Login() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f4f7fb] px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl overflow-hidden rounded-[32px] border border-white/70 bg-white/70 shadow-[0_30px_80px_rgba(9,30,56,0.12)] backdrop-blur-xl">
+    <main className="min-h-screen overflow-hidden bg-[#071b2c] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-cput-blue-light/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-cput-gold/15 blur-3xl" />
+      <div className="page-enter relative mx-auto max-w-5xl overflow-hidden rounded-[32px] border border-white/15 bg-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl">
+        <div className="absolute right-5 top-5 z-10"><ThemeToggle dark /></div>
         <div className="grid lg:grid-cols-[1.08fr_0.92fr]">
           <div className="relative overflow-hidden bg-gradient-to-br from-[#0a3d62] via-[#0c2f4f] to-[#051d2f] p-8 text-white sm:p-10 lg:p-12">
             <div className="absolute -right-16 -top-12 h-52 w-52 rounded-full bg-[#ffb81c]/20 blur-3xl" />
@@ -70,13 +74,13 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="bg-white/80 p-6 sm:p-8 lg:p-10">
+          <div className="bg-[#f8fafc] p-6 text-slate-900 sm:p-8 lg:p-10 dark:bg-[#131e31] dark:text-slate-100">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#0a3d62]/10 bg-[#0a3d62]/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0a3d62]">
               <Sparkles size={12} className="text-[#0a3d62]" />
               Member login
             </div>
 
-            <h2 className="text-3xl font-black tracking-tight text-slate-900">Welcome back</h2>
+            <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Welcome back</h2>
             <p className="mt-2 text-sm text-slate-500">Access your student or seller dashboard.</p>
 
             <form onSubmit={submit} className="mt-8 space-y-4">
@@ -84,7 +88,7 @@ export default function Login() {
                 <span className="sr-only">Email</span>
                 <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition group-focus-within:text-[#0a3d62]" />
                 <input
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3.5 pl-12 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0a3d62] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0a3d62]/8"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3.5 pl-12 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0a3d62] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0a3d62]/8 dark:border-white/10 dark:bg-[#111a2b] dark:text-slate-100 dark:focus:bg-[#172b45]"
                   type="email"
                   required
                   placeholder="student@mycput.ac.za"
@@ -97,7 +101,7 @@ export default function Login() {
                 <span className="sr-only">Password</span>
                 <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition group-focus-within:text-[#0a3d62]" />
                 <input
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3.5 pl-12 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0a3d62] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0a3d62]/8"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3.5 pl-12 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0a3d62] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0a3d62]/8 dark:border-white/10 dark:bg-[#111a2b] dark:text-slate-100 dark:focus:bg-[#172b45]"
                   type="password"
                   required
                   placeholder="Password"
@@ -116,7 +120,7 @@ export default function Login() {
               </button>
             </form>
 
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-[#111a2b] dark:text-slate-300">
               New here?
               <Link to="/signup" className="ml-1 font-semibold text-[#0a3d62] transition hover:text-[#1a5fa3]">
                 Create an account

@@ -13,6 +13,7 @@ import Cart from './pages/student/Cart';
 import Orders from './pages/student/Orders';
 import Announcements from './pages/student/Announcements';
 import Messages from './pages/shared/Messages';
+import Community from './pages/shared/Community';
 import Profile from './pages/shared/Profile';
 import SellerDashboard from './pages/seller/SellerDashboard';
 import AddListing from './pages/seller/AddListing';
@@ -99,6 +100,7 @@ function AppRoutes() {
       <Route path="/cart" element={<Protected><Cart /></Protected>} />
       <Route path="/orders" element={<Protected><Orders /></Protected>} />
       <Route path="/announcements" element={<Protected><Announcements /></Protected>} />
+      <Route path="/community" element={<Protected><Community /></Protected>} />
 
       {/* Shared */}
       <Route path="/messages" element={<Protected><Messages /></Protected>} />

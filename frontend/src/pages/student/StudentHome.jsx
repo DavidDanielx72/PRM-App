@@ -3,9 +3,9 @@ import { supabase } from '../../services/supabase';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar';
 import ProductCard from '../../components/ProductCard';
-import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { Search, X, TrendingUp, Sparkles, Package } from 'lucide-react';
+import CategoryIcon from '../../components/CategoryIcon';
 
 export default function StudentHome() {
   const { user, profile } = useAuth();
@@ -80,14 +80,14 @@ export default function StudentHome() {
     <div className="min-h-screen bg-cput-light">
       <Navbar cartCount={cartCount} />
 
-      <div className="relative overflow-hidden gradient-blue text-white">
+      <div className="relative overflow-hidden gradient-blue text-white shadow-[0_18px_55px_rgba(4,30,47,0.28)]">
         <div className="absolute inset-0 opacity-25">
           <div className="absolute -top-32 -right-32 w-[28rem] h-[28rem] bg-cput-gold rounded-full blur-[120px] animate-float" />
           <div className="absolute -bottom-40 -left-32 w-[32rem] h-[32rem] bg-blue-500 rounded-full blur-[130px]" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
-          <div className="max-w-2xl">
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 md:grid-cols-[1fr_280px] md:items-center md:py-14">
+          <div className="page-enter max-w-2xl">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 px-3 py-1.5 rounded-full text-xs font-medium mb-4 animate-fade-in">
               <Sparkles size={12} className="text-cput-gold" />
               <span>Welcome back, {firstName}</span>
@@ -125,8 +125,8 @@ export default function StudentHome() {
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-cput-light rounded-t-[2rem]" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-10">
-        <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+      <div className="mx-auto max-w-7xl px-4 pb-10 pt-5 sm:px-6">
+        <div className="glass sticky top-[4.5rem] z-30 -mx-2 mb-6 flex items-center gap-2 overflow-x-auto rounded-2xl p-2 pb-2 scrollbar-hide px-3">
           <button
             onClick={() => setCat(null)}
             className={`px-4 py-2 rounded-xl text-[13px] font-semibold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 ${
@@ -148,7 +148,7 @@ export default function StudentHome() {
                   : 'bg-cput-surface text-slate-600 hover:bg-cput-surface-blue border border-cput-blue/10 hover:border-cput-blue/30'
               }`}
             >
-              <span className="text-base">{category.icon}</span>
+              <CategoryIcon name={category.icon} size={16} />
               {category.name}
             </button>
           ))}
@@ -162,7 +162,7 @@ export default function StudentHome() {
         )}
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="stagger-grid grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {[...Array(10)].map((_, index) => (
               <div key={index} className="bg-cput-surface rounded-2xl overflow-hidden border border-cput-blue/10">
                 <div className="h-44 skeleton" />
@@ -183,7 +183,7 @@ export default function StudentHome() {
             <p className="text-sm text-slate-400 mt-1.5">Try a different search or category</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="stagger-grid grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {listings.map((listing, index) => (
               <ProductCard key={listing.id} listing={listing} onAddToCart={addToCart} index={index} />
             ))}

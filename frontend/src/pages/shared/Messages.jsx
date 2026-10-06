@@ -224,9 +224,9 @@ export default function Messages() {
           </div>
         </div>
 
-        <div className="animate-scale-in grid overflow-hidden rounded-[30px] border border-cput-blue/15 bg-cput-surface/90 shadow-[0_20px_60px_rgba(10,61,98,0.1)] backdrop-blur-xl lg:grid-cols-[330px_minmax(0,1fr)]">
-          <aside className="border-b border-cput-blue/10 bg-cput-surface-blue/80 lg:border-b-0 lg:border-r">
-            <div className="border-b border-slate-200/80 p-4">
+        <div className="animate-scale-in grid overflow-hidden rounded-[30px] border border-cput-blue/15 bg-cput-surface/90 shadow-[0_20px_60px_rgba(10,61,98,0.1)] backdrop-blur-xl dark:border-white/10 dark:bg-[#131e31]/90 lg:grid-cols-[330px_minmax(0,1fr)]">
+        <aside className="border-b border-cput-blue/10 bg-cput-surface-blue/80 dark:border-white/10 dark:bg-[#111a2b]/90 lg:border-b-0 lg:border-r">
+          <div className="border-b border-slate-200/80 p-4 dark:border-white/10">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                 {profile?.role === 'admin' ? 'All users' : profile?.role === 'seller' || profile?.is_seller ? 'Students and admins' : 'Sellers'}
               </p>
@@ -234,7 +234,7 @@ export default function Messages() {
 
             <div className="max-h-[680px] overflow-y-auto p-3">
               {contacts.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-sm text-slate-500">
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-sm text-slate-500 dark:border-white/10 dark:bg-[#172b45] dark:text-slate-300">
                   No available contacts right now.
                 </div>
               ) : (
@@ -251,10 +251,10 @@ export default function Messages() {
                       className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition duration-200 hover:-translate-y-0.5 ${
                         isSelected
                           ? 'border-[#0a3d62]/15 bg-[#0a3d62] text-white shadow-lg shadow-[#0a3d62]/15'
-                          : 'border-transparent bg-cput-surface hover:border-cput-blue/15 hover:bg-cput-surface-blue text-slate-700'
+                          : 'border-transparent bg-cput-surface hover:border-cput-blue/15 hover:bg-cput-surface-blue text-slate-700 dark:text-slate-200'
                       }`}
                     >
-                      <div className={`grid h-11 w-11 place-items-center rounded-xl ${isSelected ? 'bg-white/10 text-white' : 'bg-[#0a3d62]/5 text-[#0a3d62]'}`}>
+                      <div className={`grid h-11 w-11 place-items-center rounded-xl ${isSelected ? 'bg-white/10 text-white' : 'bg-[#0a3d62]/5 text-[#0a3d62] dark:bg-white/10 dark:text-blue-200'}`}>
                         {contact.role === 'seller' ? <Store size={18} /> : <UserRound size={18} />}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -283,7 +283,7 @@ export default function Messages() {
           <section className="flex min-h-[640px] flex-col">
             {selectedContact ? (
               <>
-                <header className="flex items-center justify-between border-b border-cput-blue/10 bg-cput-surface/75 px-5 py-4">
+                <header className="flex items-center justify-between border-b border-cput-blue/10 bg-cput-surface/75 px-5 py-4 dark:border-white/10 dark:bg-[#131e31]/80">
                   <div className="flex items-center gap-3">
                     <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#0a3d62] to-[#1a5fa3] text-white">
                       {selectedContact.role === 'seller' ? <Store size={17} /> : <UserRound size={17} />}
@@ -298,12 +298,12 @@ export default function Messages() {
                   </span>
                 </header>
 
-                <div className="flex flex-1 flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#f4f7fb_100%)] p-4">
+                <div className="flex flex-1 flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#f4f7fb_100%)] p-4 dark:bg-[linear-gradient(180deg,#111a2b_0%,#0b1220_100%)]">
                   <div className="flex-1 space-y-3 overflow-y-auto pr-1">
                     {loading ? (
                       <div className="text-sm text-slate-400">Loading conversation...</div>
                     ) : messages.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-5 text-sm text-slate-500">
+                      <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-5 text-sm text-slate-500 dark:border-white/10 dark:bg-[#172b45] dark:text-slate-300">
                         No messages yet. Start the conversation.
                       </div>
                     ) : (
@@ -315,7 +315,7 @@ export default function Messages() {
                               className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm transition hover:-translate-y-0.5 ${
                                 isMine
                                   ? 'bg-gradient-to-r from-[#0a3d62] to-[#123f64] text-white'
-                                  : 'border border-cput-blue/10 bg-cput-surface text-slate-700'
+                                  : 'border border-cput-blue/10 bg-cput-surface text-slate-700 dark:border-white/10 dark:text-slate-200'
                               }`}
                             >
                               {message.content}
@@ -334,7 +334,7 @@ export default function Messages() {
                       value={text}
                       onChange={(event) => setText(event.target.value)}
                       placeholder="Type your message..."
-                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0a3d62] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0a3d62]/8"
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0a3d62] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#0a3d62]/8 dark:border-white/10 dark:bg-[#172b45] dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:bg-[#203b5c]"
                     />
                     <button
                       type="submit"

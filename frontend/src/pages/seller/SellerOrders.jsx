@@ -23,7 +23,7 @@ export default function SellerOrders() {
   async function updateOrder(order, field, value) {
     setSaving(order.id);
     const updates = field === 'delivery_date' ? { delivery_date: value ? new Date(`${value}T23:59:59`).toISOString() : null } : { status: value };
-    const { error } = await supabase.from('orders').update(updates).eq('id', order.id);
+    const { error } = await supabase.from('orders').update(updates).eq('id', order.id).eq('seller_id', user.id);
     if (error) toast.error(error.message);
     else setOrders((current) => current.map((item) => item.id === order.id ? { ...item, ...updates } : item));
     setSaving(null);
