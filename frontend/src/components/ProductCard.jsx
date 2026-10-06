@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Wrench } from 'lucide-react';
 
 export default function ProductCard({ listing, onAddToCart, index = 0 }) {
-  const { id, title, price, image_url, is_service, categories } = listing;
+  const { id, title, price, image_url, is_service, is_promotion, categories, stock } = listing;
 
   return (
     <div
@@ -39,6 +39,11 @@ export default function ProductCard({ listing, onAddToCart, index = 0 }) {
               Service
             </span>
           )}
+          {is_promotion && (
+            <span className="absolute right-2.5 top-2.5 rounded-full bg-cput-gold px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-cput-blue shadow-lg">
+              Promotion
+            </span>
+          )}
         </div>
       </Link>
 
@@ -63,7 +68,8 @@ export default function ProductCard({ listing, onAddToCart, index = 0 }) {
             </span>
           </div>
 
-          {onAddToCart && (
+          <span className={`mr-2 text-[10px] font-bold ${stock > 0 ? 'text-slate-400' : 'text-red-500'}`}>{stock > 0 ? `${stock} left` : 'Sold out'}</span>
+          {onAddToCart && stock > 0 && (
             <button
               onClick={(e) => {
                 e.preventDefault();

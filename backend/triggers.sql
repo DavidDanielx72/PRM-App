@@ -2,3 +2,22 @@ CREATE OR REPLACE FUNCTION public.handle_new_user() RETURNS TRIGGER AS $$ BEGIN 
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 CREATE OR REPLACE FUNCTION public.check_listing_keywords() RETURNS TRIGGER AS $$ DECLARE keyword TEXT; content TEXT := lower(NEW.title || ' ' || coalesce(NEW.description,'')); BEGIN FOR keyword IN SELECT banned_keywords.keyword FROM public.banned_keywords LOOP IF content LIKE '%' || keyword || '%' THEN RAISE EXCEPTION 'Listing contains prohibited content: %', keyword; END IF; END LOOP; RETURN NEW; END; $$ LANGUAGE plpgsql;
 CREATE TRIGGER validate_listing_keywords BEFORE INSERT OR UPDATE ON public.listings FOR EACH ROW EXECUTE FUNCTION public.check_listing_keywords();
+CREATE OR REPLACE FUNCTION public.reserve_listing_stock() RETURNS TRIGGER AS $$
+DECLARE available_stock INTEGER;
+BEGIN
+  UPDATE public.listings
+  SET stock = stock - NEW.quantity, updated_at = NOW()
+  WHERE id = NEW.listing_id
+    AND is_active = true
+    AND stock >= NEW.quantity
+  RETURNING stock INTO available_stock;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Not enough stock available for this listing';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+CREATE TRIGGER reserve_stock_before_order
+BEFORE INSERT ON public.orders
+FOR EACH ROW EXECUTE FUNCTION public.reserve_listing_stock();

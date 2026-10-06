@@ -107,6 +107,7 @@ function AppRoutes() {
       {/* Seller */}
       <Route path="/seller" element={<Protected roles={['seller', 'admin']}><SellerDashboard /></Protected>} />
       <Route path="/seller/add-listing" element={<Protected roles={['seller', 'admin']}><AddListing /></Protected>} />
+      <Route path="/seller/listings/:listingId/edit" element={<Protected roles={['seller', 'admin']}><AddListing /></Protected>} />
       <Route path="/seller/orders" element={<Protected roles={['seller', 'admin']}><SellerOrders /></Protected>} />
 
       {/* Admin */}

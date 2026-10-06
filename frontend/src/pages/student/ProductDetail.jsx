@@ -104,6 +104,11 @@ export default function ProductDetail() {
                   Service
                 </span>
               )}
+              {listing.is_promotion && (
+                <span className="absolute right-4 top-4 rounded-full bg-cput-gold px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider text-cput-blue shadow-lg">
+                  Promotion
+                </span>
+              )}
             </div>
           </div>
 
@@ -125,8 +130,8 @@ export default function ProductDetail() {
                 <span className="text-4xl font-extrabold text-cput-blue tracking-tight">
                   R{parseFloat(listing.price).toFixed(2)}
                 </span>
-                <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                  Available
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${listing.stock > 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
+                {listing.stock > 0 ? `${listing.stock} available` : 'Sold out'}
                 </span>
               </div>
 
@@ -148,11 +153,11 @@ export default function ProductDetail() {
               {!isOwn ? (
                 <button
                   onClick={addToCart}
-                  disabled={busy}
+                  disabled={busy || listing.stock < 1}
                   className="group w-full bg-gradient-to-br from-cput-blue to-cput-blue-dark text-white font-bold py-3.5 rounded-2xl hover:shadow-xl hover:shadow-blue-900/25 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
                   <ShoppingCart size={18} className="group-hover:scale-110 transition-transform" />
-                  {busy ? 'Adding…' : 'Add to Cart'}
+                  {listing.stock < 1 ? 'Sold out' : busy ? 'Adding…' : 'Add to Cart'}
                 </button>
               ) : (
                 <div className="text-center text-sm font-medium text-slate-400 py-3 bg-slate-50 rounded-2xl">

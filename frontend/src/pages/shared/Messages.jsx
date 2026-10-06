@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar';
 import toast from 'react-hot-toast';
-import { MessageSquareText, SendHorizonal, UserRound, ShieldCheck, Store, ArrowUpRight } from 'lucide-react';
+import { Bell, MessageSquareText, SendHorizonal, UserRound, ShieldCheck, Store, ArrowUpRight } from 'lucide-react';
 
 const roleLabel = {
   student: 'Student',
@@ -21,39 +21,11 @@ export default function Messages() {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const allowedUsers = useMemo(() => {
-    if (!profile) return [];
-
-    if (profile.role === 'admin') {
-      return ['admin', 'seller', 'student'];
-    }
-    if (profile.role === 'seller' || profile.is_seller === true) {
-      return ['admin', 'student'];
-    }
-    if (profile.role === 'student') {
-      return ['seller'];
-    }
-    return [];
-  }, [profile]);
-
   const loadContacts = async () => {
     if (!user || !profile) return;
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, full_name, role, is_seller, email')
-      .neq('id', user.id)
-      .in('role', allowedUsers)
-      .order('full_name');
-
-    if (error) {
-      toast.error(error.message || 'Unable to load contacts');
-      return;
-    }
-
     const { data: threadRows, error: threadError } = await supabase
       .from('messages')
-      .select('sender_id, receiver_id')
+      .select('sender_id, receiver_id, listing_id, is_read, created_at')
       .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
     if (threadError) {
@@ -61,40 +33,74 @@ export default function Messages() {
       return;
     }
 
-    const contactIdsWithMessages = new Set(
-      (threadRows || []).flatMap(({ sender_id, receiver_id }) => [sender_id, receiver_id])
-    );
-    contactIdsWithMessages.delete(user.id);
-
-    const visibleContacts = [...(data || [])];
-    const missingContactIds = [...contactIdsWithMessages].filter(
-      (contactId) => !visibleContacts.some((contact) => contact.id === contactId)
-    );
-
-    if (missingContactIds.length > 0) {
-      const { data: threadContacts, error: threadContactsError } = await supabase
-        .from('profiles')
-        .select('id, full_name, role, is_seller, email')
-        .in('id', missingContactIds)
-        .order('full_name');
-
-      if (threadContactsError) {
-        toast.error(threadContactsError.message || 'Unable to load message contacts');
-        return;
-      }
-
-      visibleContacts.push(...(threadContacts || []));
+    let contactIds = [];
+    if (profile.role === 'admin') {
+      const { data, error } = await supabase.from('profiles').select('id, full_name, role, is_seller, email').neq('id', user.id).order('full_name');
+      if (error) return toast.error(error.message || 'Unable to load contacts');
+      contactIds = data || [];
+    } else if (profile.role === 'seller' || profile.is_seller === true) {
+      // Sellers may only reply to students who initiated a conversation.
+      contactIds = [...new Set((threadRows || [])
+        .filter((message) => message.receiver_id === user.id)
+        .map((message) => message.sender_id))];
+    } else {
+      // Students may continue existing seller threads, but can only start one from a listing.
+      contactIds = [...new Set((threadRows || []).map(({ sender_id, receiver_id }) => sender_id === user.id ? receiver_id : sender_id))];
     }
 
+    let visibleContacts = Array.isArray(contactIds) && contactIds.length && typeof contactIds[0] === 'object'
+      ? contactIds
+      : [];
+    const idsToFetch = Array.isArray(contactIds) && contactIds.length && typeof contactIds[0] === 'string' ? contactIds : [];
+    if (idsToFetch.length) {
+      const { data, error } = await supabase.from('profiles').select('id, full_name, role, is_seller, email').in('id', idsToFetch).order('full_name');
+      if (error) return toast.error(error.message || 'Unable to load message contacts');
+      visibleContacts = data || [];
+    }
+    if (profile.role === 'student') {
+      // Students can start seller threads from listings, but must also retain
+      // any existing admin conversation so admin replies remain visible.
+      visibleContacts = visibleContacts.filter(
+        (contact) => contact.role === 'seller' || contact.is_seller === true || contact.role === 'admin'
+      );
+    } else if (profile.role === 'seller' || profile.is_seller === true) {
+      // Sellers can reply to students and admins who have already contacted them.
+      visibleContacts = visibleContacts.filter(
+        (contact) => contact.role === 'student' || contact.role === 'admin'
+      );
+    }
+
+    if (profile.role === 'student' && searchParams.get('to') && searchParams.get('listing')) {
+      const { data: listing, error } = await supabase.from('listings').select('seller_id').eq('id', searchParams.get('listing')).maybeSingle();
+      if (!error && listing?.seller_id === searchParams.get('to') && !visibleContacts.some((contact) => contact.id === listing.seller_id)) {
+        const { data: seller } = await supabase.from('profiles').select('id, full_name, role, is_seller, email').eq('id', listing.seller_id).maybeSingle();
+        if (seller) visibleContacts = [seller, ...visibleContacts];
+      }
+    }
+
+    const messageMeta = new Map();
+    (threadRows || []).forEach((message) => {
+      const contactId = message.sender_id === user.id ? message.receiver_id : message.sender_id;
+      const current = messageMeta.get(contactId) || { unreadCount: 0, latestMessageAt: '' };
+      if (message.receiver_id === user.id && !message.is_read) current.unreadCount += 1;
+      if (message.created_at > current.latestMessageAt) current.latestMessageAt = message.created_at;
+      messageMeta.set(contactId, current);
+    });
+    visibleContacts = visibleContacts.map((contact) => ({
+      ...contact,
+      ...(messageMeta.get(contact.id) || { unreadCount: 0, latestMessageAt: '' }),
+    }));
     visibleContacts.sort((first, second) =>
-      (first.full_name || '').localeCompare(second.full_name || '')
+      second.unreadCount - first.unreadCount
+      || (second.latestMessageAt || '').localeCompare(first.latestMessageAt || '')
+      || (first.full_name || '').localeCompare(second.full_name || '')
     );
     setContacts(visibleContacts);
 
     const targetId = searchParams.get('to');
     if (targetId && visibleContacts.some((contact) => contact.id === targetId)) {
       setSelectedContactId(targetId);
-    } else if (visibleContacts[0]) {
+    } else if (visibleContacts[0] && !visibleContacts.some((contact) => contact.unreadCount > 0)) {
       setSelectedContactId(visibleContacts[0].id);
       if (targetId) setSearchParams({ to: visibleContacts[0].id });
     }
@@ -125,6 +131,9 @@ export default function Messages() {
         .eq('receiver_id', user.id)
         .eq('sender_id', contactId)
         .eq('is_read', false);
+      setContacts((current) => current.map((contact) => (
+        contact.id === contactId ? { ...contact, unreadCount: 0 } : contact
+      )));
     }
     setLoading(false);
   };
@@ -153,6 +162,7 @@ export default function Messages() {
           ) {
             loadConversation(selectedContactId);
           }
+          loadContacts();
         }
       )
       .subscribe();
@@ -160,13 +170,30 @@ export default function Messages() {
     return () => supabase.removeChannel(channel);
   }, [selectedContactId, user]);
 
+  useEffect(() => {
+    if (!user) return undefined;
+
+    const channel = supabase
+      .channel(`inbox-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+        () => loadContacts()
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [user, profile]);
+
   async function sendMessage(event) {
     event.preventDefault();
     if (!user || !selectedContactId || !text.trim()) return;
 
+    const listingId = searchParams.get('listing');
     const { error } = await supabase.from('messages').insert({
       sender_id: user.id,
       receiver_id: selectedContactId,
+      listing_id: profile?.role === 'student' ? listingId : null,
       content: text.trim(),
       is_read: false,
     });
@@ -187,7 +214,7 @@ export default function Messages() {
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex animate-slide-up items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#0a3d62] to-[#1a5fa3] text-white shadow-md shadow-[#0a3d62]/20">
             <MessageSquareText size={20} />
           </div>
@@ -197,7 +224,7 @@ export default function Messages() {
           </div>
         </div>
 
-        <div className="grid overflow-hidden rounded-[30px] border border-cput-blue/15 bg-cput-surface/90 shadow-[0_20px_60px_rgba(10,61,98,0.1)] backdrop-blur-xl lg:grid-cols-[330px_minmax(0,1fr)]">
+        <div className="animate-scale-in grid overflow-hidden rounded-[30px] border border-cput-blue/15 bg-cput-surface/90 shadow-[0_20px_60px_rgba(10,61,98,0.1)] backdrop-blur-xl lg:grid-cols-[330px_minmax(0,1fr)]">
           <aside className="border-b border-cput-blue/10 bg-cput-surface-blue/80 lg:border-b-0 lg:border-r">
             <div className="border-b border-slate-200/80 p-4">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
@@ -221,7 +248,7 @@ export default function Messages() {
                         setSelectedContactId(contact.id);
                         setSearchParams({ to: contact.id });
                       }}
-                      className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition ${
+                      className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition duration-200 hover:-translate-y-0.5 ${
                         isSelected
                           ? 'border-[#0a3d62]/15 bg-[#0a3d62] text-white shadow-lg shadow-[#0a3d62]/15'
                           : 'border-transparent bg-cput-surface hover:border-cput-blue/15 hover:bg-cput-surface-blue text-slate-700'
@@ -233,7 +260,14 @@ export default function Messages() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <p className="truncate font-semibold">{contact.full_name || 'Unknown user'}</p>
-                          {contact.role === 'seller' && <ShieldCheck size={14} className={isSelected ? 'text-white/80' : 'text-green-500'} />}
+                          <div className="flex shrink-0 items-center gap-2">
+                            {contact.unreadCount > 0 && (
+                              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${isSelected ? 'bg-white/15 text-white' : 'bg-cput-gold/20 text-cput-blue'}`}>
+                                <Bell size={11} fill="currentColor" /> {contact.unreadCount > 9 ? '9+' : contact.unreadCount}
+                              </span>
+                            )}
+                            {contact.role === 'seller' && <ShieldCheck size={14} className={isSelected ? 'text-white/80' : 'text-green-500'} />}
+                          </div>
                         </div>
                         <p className={`text-xs ${isSelected ? 'text-white/75' : 'text-slate-500'}`}>
                           {roleLabel[contact.role] || 'User'}
@@ -278,7 +312,7 @@ export default function Messages() {
                         return (
                           <div key={message.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                             <div
-                              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm transition hover:-translate-y-0.5 ${
                                 isMine
                                   ? 'bg-gradient-to-r from-[#0a3d62] to-[#123f64] text-white'
                                   : 'border border-cput-blue/10 bg-cput-surface text-slate-700'
