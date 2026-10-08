@@ -45,7 +45,7 @@ export default function Profile() {
   }, [profile]);
 
   const role = isAdmin ? 'Admin' : isSeller ? 'Seller' : 'Student';
-  const canEditCampus = !isAdmin && !isSeller;
+  const canEditCampus = !isAdmin;
   const canEditAddress = isSeller || !isAdmin;
 
   async function saveProfile(event) {

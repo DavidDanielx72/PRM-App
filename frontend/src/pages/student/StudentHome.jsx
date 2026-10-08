@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar';
 import ProductCard from '../../components/ProductCard';
 import toast from 'react-hot-toast';
-import { Search, X, TrendingUp, Sparkles, Package } from 'lucide-react';
+import { Search, X, TrendingUp, Sparkles, Package, GraduationCap, Globe2 } from 'lucide-react';
 import CategoryIcon from '../../components/CategoryIcon';
 
 export default function StudentHome() {
@@ -14,6 +14,7 @@ export default function StudentHome() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [cat, setCat] = useState(null);
+  const [campusScope, setCampusScope] = useState(profile?.campus ? 'campus' : 'all');
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function StudentHome() {
       setLoading(true);
       let query = supabase
         .from('listings')
-        .select('*, categories(name, icon)')
+        .select('*, categories(name, icon), profiles!listings_seller_id_fkey(campus)')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -34,13 +35,22 @@ export default function StudentHome() {
 
       const { data, error } = await query;
       if (error) toast.error('Could not load listings');
-      else setListings(data || []);
+      else {
+        const campusListings = campusScope === 'campus' && profile?.campus
+          ? (data || []).filter((listing) => listing.profiles?.campus === profile.campus)
+          : data || [];
+        setListings(campusListings);
+      }
       setLoading(false);
     };
 
     const timer = setTimeout(fetch, 250);
     return () => clearTimeout(timer);
-  }, [search, cat]);
+  }, [search, cat, campusScope, profile?.campus]);
+
+  useEffect(() => {
+    if (!profile?.campus) setCampusScope('all');
+  }, [profile?.campus]);
 
   useEffect(() => {
     if (!user) return;
@@ -152,6 +162,36 @@ export default function StudentHome() {
               {category.name}
             </button>
           ))}
+        </div>
+
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-slate-400">Show</span>
+          <button
+            type="button"
+            onClick={() => setCampusScope('campus')}
+            disabled={!profile?.campus}
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[13px] font-semibold transition-all ${
+              campusScope === 'campus'
+                ? 'border-cput-blue bg-gradient-to-br from-cput-blue to-cput-blue-dark text-white shadow-md shadow-blue-900/20'
+                : 'border-cput-blue/10 bg-cput-surface text-slate-600 hover:border-cput-blue/30 hover:bg-cput-surface-blue'
+            } disabled:cursor-not-allowed disabled:opacity-50`}
+          >
+            <GraduationCap size={14} /> Your campus
+          </button>
+          <button
+            type="button"
+            onClick={() => setCampusScope('all')}
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[13px] font-semibold transition-all ${
+              campusScope === 'all'
+                ? 'border-cput-blue bg-gradient-to-br from-cput-blue to-cput-blue-dark text-white shadow-md shadow-blue-900/20'
+                : 'border-cput-blue/10 bg-cput-surface text-slate-600 hover:border-cput-blue/30 hover:bg-cput-surface-blue'
+            }`}
+          >
+            <Globe2 size={14} /> All campuses
+          </button>
+          {!profile?.campus && (
+            <span className="text-xs text-slate-400">Set your campus in Profile to filter nearby listings.</span>
+          )}
         </div>
 
         {!loading && listings.length > 0 && (
