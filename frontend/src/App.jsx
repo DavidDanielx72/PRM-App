@@ -101,6 +101,7 @@ function AppRoutes() {
       <Route path="/orders" element={<Protected><Orders /></Protected>} />
       <Route path="/announcements" element={<Protected><Announcements /></Protected>} />
       <Route path="/community" element={<Protected><Community /></Protected>} />
+      <Route path="/mycampus" element={<Protected><Community /></Protected>} />
 
       {/* Shared */}
       <Route path="/messages" element={<Protected><Messages /></Protected>} />
